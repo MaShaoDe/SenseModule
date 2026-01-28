@@ -1,126 +1,42 @@
-// Sense-Module Core v1 – main.cpp
-// © Marcel Sauder · Sense Module · January 2026
-
 #include <Arduino.h>
 #include <Wire.h>
+#include "sht3x.h"
 
-// -----------------------------------------------------------------------------
-// Configuration
-// -----------------------------------------------------------------------------
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
 
-#define SERIAL_BAUDRATE 115200
+  Serial.println();
+  Serial.println("=== SHT3X ROBUST MODULE TEST ===");
 
-// I²C default pins for ESP32 DevKitC V3
-#define I2C_SDA_PIN 21
-#define I2C_SCL_PIN 22
+  Wire.begin();
 
-// Status LED pins
-#define LED_GREEN_PIN 16
-#define LED_RED_PIN   17
+  if (!sht3x_init()) {
+    Serial.println("ERROR: SHT3X not detected");
+    while (true) {
+      delay(1000);
+    }
+  }
 
-// User button pin
-#define USER_BUTTON_PIN 27
-
-// -----------------------------------------------------------------------------
-// Global state
-// -----------------------------------------------------------------------------
-
-bool system_ok = true;
-
-// -----------------------------------------------------------------------------
-// Helper functions
-// -----------------------------------------------------------------------------
-
-void init_serial()
-{
-    Serial.begin(SERIAL_BAUDRATE);
-    delay(200);
-    Serial.println();
-    Serial.println("[Sense-Module Core] Booting...");
+  Serial.println("SHT3X detected");
 }
 
-void init_gpio()
-{
-    pinMode(LED_GREEN_PIN, OUTPUT);
-    pinMode(LED_RED_PIN, OUTPUT);
+void loop() {
+  SHT3xData data = sht3x_read();
 
-    pinMode(USER_BUTTON_PIN, INPUT_PULLUP);
+  if (data.status == SHT3xStatus::OK) {
+    Serial.print("Temperature: ");
+    Serial.print(data.temperature, 2);
+    Serial.println(" C");
 
-    digitalWrite(LED_GREEN_PIN, LOW);
-    digitalWrite(LED_RED_PIN, LOW);
-}
+    Serial.print("Humidity: ");
+    Serial.print(data.humidity, 2);
+    Serial.println(" %RH");
+  } else {
+    Serial.print("SHT3X ERROR: ");
+    Serial.println(sht3x_status_to_string(data.status));
+  }
 
-void init_i2c()
-{
-    Wire.begin(I2C_SDA_PIN, I2C_SCL_PIN);
-    Serial.println("[I2C] Bus initialised");
-}
-
-void i2c_scan()
-{
-    Serial.println("[I2C] Scanning bus...");
-
-    uint8_t count = 0;
-    for (uint8_t address = 1; address < 127; address++)
-    {
-        Wire.beginTransmission(address);
-        if (Wire.endTransmission() == 0)
-        {
-            Serial.print("  Found device at 0x");
-            if (address < 16) Serial.print("0");
-            Serial.println(address, HEX);
-            count++;
-        }
-    }
-
-    if (count == 0)
-    {
-        Serial.println("  No I2C devices found");
-        system_ok = false;
-    }
-    else
-    {
-        Serial.print("  Total devices: ");
-        Serial.println(count);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Arduino entry points
-// -----------------------------------------------------------------------------
-
-void setup()
-{
-    init_serial();
-    init_gpio();
-    init_i2c();
-
-    i2c_scan();
-
-    if (system_ok)
-    {
-        digitalWrite(LED_GREEN_PIN, HIGH);
-        Serial.println("[System] Core initialisation OK");
-    }
-    else
-    {
-        digitalWrite(LED_RED_PIN, HIGH);
-        Serial.println("[System] Core initialisation FAILED");
-    }
-}
-
-void loop()
-{
-    // Simple heartbeat via green LED
-    digitalWrite(LED_GREEN_PIN, HIGH);
-    delay(500);
-    digitalWrite(LED_GREEN_PIN, LOW);
-    delay(500);
-
-    // User button test
-    if (digitalRead(USER_BUTTON_PIN) == LOW)
-    {
-        Serial.println("[Input] User button pressed");
-        delay(300); // crude debounce
-    }
+  Serial.println("---");
+  delay(5000);
 }
