@@ -2,13 +2,14 @@
 #include <Wire.h>
 
 #include "sht3x.h"
+#include "rtc_ds3231.h"
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
 
 #define ONE_WIRE_BUS 4   // GPIO gemss Doku
 
-// DS18B20
+// ---------- DS18B20 ----------
 OneWire oneWire(ONE_WIRE_BUS);
 DallasTemperature ds18b20(&oneWire);
 
@@ -19,6 +20,10 @@ void setup() {
   // I2C zentral
   Wire.begin();
   delay(200);
+
+  // RTC
+  rtc_init();
+  Serial.println("RTC OK");
 
   // SHT3x
   if (sht3x_init()) {
@@ -31,10 +36,22 @@ void setup() {
   ds18b20.begin();
   Serial.println("DS18B20 OK");
 
-  Serial.println("=== SENSOR COMBINED TEST ===");
+  Serial.println("=== SENSOR + RTC COMBINED TEST ===");
 }
 
 void loop() {
+  // --- RTC ---
+  RTCDateTime now = rtc_now();
+
+  Serial.print("TIME ");
+  Serial.print(now.year); Serial.print("-");
+  Serial.print(now.month); Serial.print("-");
+  Serial.print(now.day); Serial.print(" ");
+  Serial.print(now.hour); Serial.print(":");
+  Serial.print(now.minute); Serial.print(":");
+  Serial.print(now.second);
+  Serial.println();
+
   // --- SHT3x ---
   SHT3xData sht = sht3x_read();
   Serial.print("SHT3X  T=");
