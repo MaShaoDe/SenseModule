@@ -1,4 +1,4 @@
-# Decision Log – MCU Baseline
+# 04 Decision Log – MCU Baseline
 
 Decision ID: DL-001
 Date: 2026-01-29
