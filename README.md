@@ -1,97 +1,116 @@
-# SENSE Module
+# 07 Hardware Profile – Sense Satellite
 
-© Marcel Sauder, 2026
+Version: 0.9 (Draft – Functionally Final)
+Date: 2026-01-29
+Author: Marcel Sauder
+Project: SenseModule / SenseCore
 
-The SENSE Module is the primary hardware platform of the SENSE system. It is designed as a robust, modular sensing device capable of running SENSE Core and executing Eco application profiles such as EcoRoom and EcoFridge.
+## 1. Purpose and Role
 
-The SENSE Module is not a single-purpose device. It is a configurable platform intended for long-term, extensible environmental monitoring and control systems.
+The **Sense Satellite** is a strictly measuring and delivering node within the Sense ecosystem. Its sole responsibility is to acquire environmental and system data in a deterministic, serial manner, store this data locally, and optionally deliver it to another node or system.
 
-## Purpose
+Sense Satellite nodes are designed to operate unattended, energy-efficient, and optionally fully autonomous. They do not provide user interaction, local visualisation, or on-device analytics.
 
-The SENSE Module provides a stable hardware foundation for environmental sensing, offline-capable data acquisition, reliable data forwarding, optional local visualization, and integration into SENSE Home. It serves as the intelligent edge node within the SENSE architecture.
+Sense Satellite is a **role**, not a hardware class. Any SenseCore-compatible hardware may operate in Sense Satellite mode.
 
-## Architecture Overview
+## 2. SenseCore Compatibility Contract
 
-The SENSE Module is based on the ESP32 platform and runs SENSE Core in full core profile.
+A device operating as a Sense Satellite **must fully comply** with the SenseCore compatibility contract. In this role, SenseCore provides:
 
-Key characteristics include sufficient processing and memory resources, concurrent networking and local storage, support for multiple sensors, optional display support, and deterministic offline-first operation.
+* deterministic execution
+* time-stamped data acquisition
+* local, non-volatile data storage
+* optional data delivery
+* explicit data retention or deletion strategies
+* robust recovery and reset behaviour
 
-Application-specific behavior is never hard-coded. All behavior is defined through configuration and Eco application profiles.
+Sense Satellite does not extend SenseCore. It is a constrained operational mode of it.
 
-## Relationship to Other SENSE Components
+## 3. Supported Measurements
 
-### SENSE Core
+A Sense Satellite may acquire the following measurements:
 
-SENSE Core is the firmware running on the SENSE Module. It provides sensor abstraction, timing and scheduling, storage and buffering, communication and acknowledgement handling, and capability-based feature activation.
+* temperature
+* relative humidity
+* optional air pressure
+* optional wind speed
+* optional battery voltage
 
-The SENSE Module does not embed application logic directly. All higher-level behavior is defined via configuration and Eco profiles.
+All measurements are performed **strictly serially**, one after another. No parallel sensor operation is permitted.
 
-### Eco Applications
+Battery voltage measurement is treated as a regular sensor value and may be acquired at a reduced frequency (for example once per hour).
 
-Eco applications define how the SENSE Module behaves in a specific context. Examples include EcoRoom for room monitoring and EcoFridge for refrigerator monitoring and control.
+## 4. Execution Model
 
-Eco applications run exclusively on SENSE Modules operating in full core profile.
+The execution model is fixed and deterministic:
 
-### SENSE Module Satellite
+1. wake from sleep
+2. acquire time reference
+3. perform a single sensor measurement
+4. store measurement locally
+5. optionally deliver stored data
+6. return to sleep
 
-For large-scale or cost-sensitive deployments, the SENSE system also defines a reduced device class called the SENSE Module Satellite.
+Wireless communication (Wi-Fi, LoRa, or similar) is event-based and must not remain continuously active.
 
-A SENSE Module Satellite is typically based on ESP8266 hardware and runs SENSE Core in satellite core profile. It performs sensing, buffering, and forwarding only. It does not execute Eco profiles, does not evaluate data semantically, and does not provide a local display.
+## 5. Storage and Data Ownership
 
-Satellites forward data to a SENSE Module acting as a master node.
+All measurements **must** be stored in local, non-volatile memory.
 
-### SENSE Home
+* RAM is cache only and must never be considered authoritative
+* data delivery is optional
+* data deletion is explicit and policy-driven
+* default behaviour is to retain data
 
-SENSE Home is the central software system for aggregation, long-term storage, visualization, and alarm management.
+SD cards are explicitly not required. SPI flash or FRAM are preferred.
 
-The SENSE Module can operate fully standalone, connected to SENSE Home, or temporarily offline with automatic resynchronization. SENSE Home is optional but recommended for larger or distributed systems.
+## 6. Energy and Autonomy
 
-## Design Principles
+Sense Satellite nodes may be designed as fully autonomous systems:
 
-The SENSE Module follows these principles: clear separation of hardware, firmware, and application logic; configuration-driven behavior; offline-first reliability; capability-based feature activation; long-term maintainability; and avoidance of unnecessary complexity.
+* battery powered
+* solar powered
+* hybrid power systems
 
-## Intended Use Cases
+Energy availability must not alter SenseCore semantics. Low-energy operation is achieved through sleep cycles, not through functional degradation.
 
-Typical use cases include room climate monitoring, multi-room sensing systems, refrigerator monitoring, distributed sensor networks, and educational or research environments.
+## 7. Forbidden Capabilities
 
-The SENSE Module is not intended for high-power switching, real-time motor control, or safety-critical control systems.
+A Sense Satellite **must not** include:
 
-## Repository Structure
+* displays of any kind
+* local statistical processing
+* user interfaces
+* parallel module execution
+* continuous wireless connectivity
 
-```
-.
-├── README.md
-├── docs/
-│   ├── 00_nomenclature.md
-│   ├── 01_sense_core_overview.md
-│   ├── 02_ecoroom_profile.md
-│   ├── 03_ecoroom_configuration_example.md
-│   └── ...
-├── hardware/
-│   ├── schematics/
-│   ├── pcb/
-│   └── bom/
-├── firmware/
-│   └── sense-core/
-└── tools/
-```
+Any device providing such features must operate in a different Sense role.
 
-Documentation in the docs directory defines the conceptual and architectural foundation of the system.
+## 8. Hardware Compatibility
 
-## Project Status
+Sense Satellite nodes are based on **ESP32-class MCUs**.
 
-The SENSE Module is under active development. The current focus is on hardware platform definition, ESP32-based design, sensor and storage integration, and preparation for the EcoRoom reference deployment.
+The following MCU families are supported:
 
-## License
+* ESP32 (all variants)
+* ESP32-W1 / ESP32-C2 and similar minimal ESP32 derivatives
+* ESP32 with integrated LoRa modules
 
-This project is licensed under the GNU General Public License v3.0 (GPL-3.0).
+The **ESP32-W1** is defined as the **minimum and reference platform** for Sense Satellite.
 
-See the LICENSE file in the repository root for full license text and conditions.
+## 9. Architectural Implications
 
-License information is provided in the repository root.
+Sense Satellite is intentionally minimal. Its simplicity is a feature, not a limitation. By enforcing strict serial execution and local data ownership, Sense Satellite nodes provide:
 
-## Further Reading
+* predictable power consumption
+* high robustness
+* offline resilience
+* long-term data integrity
 
-See docs/00_nomenclature.md for system terminology and naming conventions. Additional architectural documents are located in the docs directory.
+## 10. Status
 
-The SENSE Module is the foundation of the SENSE ecosystem. All higher-level behavior is built upon its stability and clarity.
+This document is marked as **Version 0.9**.
+
+The functional scope is considered final. Minor clarifications and editorial refinements may follow before promotion to Version 1.0. No functional expansion is planned for this role.
+
+© Marcel Sauder
