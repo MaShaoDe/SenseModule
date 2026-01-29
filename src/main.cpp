@@ -1,37 +1,82 @@
 #include <Arduino.h>
+#include <Wire.h>
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <RTClib.h>
 
-#include "sensecore_storage.h"
-#include "storage_backend_ram.h"
-#include "sensecore_time.h"
+// ---------------- CONFIG ----------------
+#define ONE_WIRE_BUS 4
+#define OLED_ADDR 0x3C
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+// ----------------------------------------
+
+OneWire oneWire(ONE_WIRE_BUS);
+DallasTemperature sensors(&oneWire);
+RTC_DS3231 rtc;
+
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 void setup()
 {
     Serial.begin(115200);
     delay(500);
 
-    Serial.println();
-    Serial.println("SenseModule started (SenseCore time module)");
+    Wire.begin(21, 22);
+    Wire.setClock(100000);
+
+    if (!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDR)) {
+        Serial.println("OLED FAIL");
+        while (1);
+    }
+
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println("SenseModule");
+    display.println("Boot...");
+    display.display();
+
+    sensors.begin();
+
+    if (!rtc.begin()) {
+        Serial.println("RTC FAIL");
+    }
+
+    Serial.println("SYSTEM READY");
 }
 
 void loop()
 {
-    uint32_t now = sensecore_time_now();
+    sensors.requestTemperatures();
+    float t1 = sensors.getTempCByIndex(0);
 
-    StorageRecord r;
-    r.timestamp = now;
-    r.source_id = 1;     // placeholder role id
-    r.type_id   = 1;     // placeholder measurement type
-    r.value     = 25000; // placeholder value
-    r.flags     = 0;
+    DateTime now = rtc.now();
 
-    bool ok = storage_write(r);
+    char timebuf[16];
+    snprintf(timebuf, sizeof(timebuf),
+             "%02d:%02d:%02d",
+             now.hour(), now.minute(), now.second());
 
-    Serial.print("t=");
-    Serial.print(now);
-    Serial.print(" write=");
-    Serial.print(ok);
-    Serial.print(" count=");
-    Serial.println(storage_count());
+    display.clearDisplay();
+    display.setCursor(0, 0);
 
-    delay(1000);
+    display.print("Time: ");
+    display.println(timebuf);
+
+    display.print("Temp: ");
+    display.print(t1, 1);
+    display.println(" C");
+
+    display.display();
+
+    Serial.print("Temp=");
+    Serial.print(t1, 1);
+    Serial.print(" ");
+    Serial.println(timebuf);
+
+    delay(2000);
 }

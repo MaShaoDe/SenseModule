@@ -1,8 +1,18 @@
+# macOS
+.DS_Store
+
+# PlatformIO
 .pio/
+.pioenvs/
+.piolibdeps/
+
+# Build-Artefakte
 *.o
 *.d
 *.elf
 *.bin
 *.map
-*.a
+*.dblite
+
+# Editor-Backups
 *~
