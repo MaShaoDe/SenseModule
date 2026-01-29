@@ -1,6 +1,6 @@
 # SENSE Communication Architecture
 
-© Marcel Sauder, 2026
+© Marcel Sauder, January 2026
 
 This document defines the communication architecture of the SENSE ecosystem. It describes how SENSE Modules transmit data, how different transport technologies are integrated, and which architectural boundaries apply.
 
