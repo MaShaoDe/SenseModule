@@ -1,17 +1,37 @@
 #include <Arduino.h>
 
-#include "sensecore/sensecore.h"
-#include "sensecore/sc_config.h"
+#include "sensecore_storage.h"
+#include "storage_backend_ram.h"
+#include "sensecore_time.h"
 
 void setup()
 {
-    sc_config_t cfg;
-    cfg.role = SC_ROLE_BASE;
+    Serial.begin(115200);
+    delay(500);
 
-    sensecore_init(cfg);
+    Serial.println();
+    Serial.println("SenseModule started (SenseCore time module)");
 }
 
 void loop()
 {
-    sensecore_run_cycle();
+    uint32_t now = sensecore_time_now();
+
+    StorageRecord r;
+    r.timestamp = now;
+    r.source_id = 1;     // placeholder role id
+    r.type_id   = 1;     // placeholder measurement type
+    r.value     = 25000; // placeholder value
+    r.flags     = 0;
+
+    bool ok = storage_write(r);
+
+    Serial.print("t=");
+    Serial.print(now);
+    Serial.print(" write=");
+    Serial.print(ok);
+    Serial.print(" count=");
+    Serial.println(storage_count());
+
+    delay(1000);
 }
