@@ -1,37 +1,24 @@
 #include <Arduino.h>
 
-#include "sensecore_storage.h"
-#include "storage_backend_ram.h"
-#include "sensecore_time.h"
+// Anzeige
+extern void display_init();
+extern void display_update();
 
-void setup()
-{
-    Serial.begin(115200);
-    delay(500);
+// SIMULIERTE Messwerte (naechster Schritt: echte Daten)
+float sense_temperature = 23.4;
+float sense_humidity    = 56.7;
 
-    Serial.println();
-    Serial.println("SenseModule started (SenseCore time module)");
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+  display_init();
 }
 
-void loop()
-{
-    uint32_t now = sensecore_time_now();
+void loop() {
+  // Dummy-Aenderung, um Bewegung zu sehen
+  sense_temperature += 0.1;
+  if (sense_temperature > 25.0) sense_temperature = 23.0;
 
-    StorageRecord r;
-    r.timestamp = now;
-    r.source_id = 1;     // placeholder role id
-    r.type_id   = 1;     // placeholder measurement type
-    r.value     = 25000; // placeholder value
-    r.flags     = 0;
-
-    bool ok = storage_write(r);
-
-    Serial.print("t=");
-    Serial.print(now);
-    Serial.print(" write=");
-    Serial.print(ok);
-    Serial.print(" count=");
-    Serial.println(storage_count());
-
-    delay(1000);
+  display_update();
+  delay(1000);
 }
