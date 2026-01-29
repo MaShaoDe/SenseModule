@@ -1,0 +1,50 @@
+#include <Arduino.h>
+#include <Wire.h>
+#include "rtc_ds3231.h"
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Wire.begin();
+
+  Serial.println();
+  Serial.println("=== DS3231 RTC SET-AND-TEST ===");
+
+  if (!rtc_init()) {
+    Serial.println("ERROR: DS3231 not detected");
+  EINMALIG  setzen
+  RTCDateTime setTime;
+  setTime.year   = 2026;
+  setTime.month  = 1;
+  setTime.day    = 28;
+  setTime.hour   = 21;
+  setTime.minute = 40;
+  setTime.second = 0;
+
+  rtc_set_now(setTime);
+  Serial.println("RTC set to current time");
+}
+
+void loop() {
+  RTCDateTime now = rtc_now();
+
+  Serial.print("Date: ");
+  Serial.print(now.year);
+  Serial.print("-");
+  Serial.print(now.month);
+  Serial.print("-");
+  Serial.print(now.day);
+
+  Serial.print("  Time: ");
+  Serial.print(now.hour);
+  Serial.print(":");
+  Serial.print(now.minute);
+  Serial.print(":");
+  Serial.println(now.second);
+
+  delay(5000);
+}
+jetztauf return;
+  }
+
+  // 
