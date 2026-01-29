@@ -1,4 +1,4 @@
-# Hardware Profile – Sense Satellite
+# 07 Hardware Profile – Sense Satellite
 
 Version: 0.9 (Draft – Functionally Final)
 Date: 2026-01-29
@@ -11,7 +11,7 @@ The **Sense Satellite** is a strictly measuring and delivering node within the S
 
 Sense Satellite nodes are designed to operate unattended, energy-efficient, and optionally fully autonomous. They do not provide user interaction, local visualisation, or on-device analytics.
 
-Sense Satellite is a **role**, not a hardware class. Any SenseCore-compatible hardware may operate in Sense Satellite mode. Some hardware platforms are restricted to this role only.
+Sense Satellite is a **role**, not a hardware class. Any SenseCore-compatible hardware may operate in Sense Satellite mode.
 
 ## 2. SenseCore Compatibility Contract
 
@@ -88,25 +88,15 @@ Any device providing such features must operate in a different Sense role.
 
 ## 8. Hardware Compatibility
 
-The following MCU families are **Sense Satellite compatible**:
+Sense Satellite nodes are based on **ESP32-class MCUs**.
+
+The following MCU families are supported:
 
 * ESP32 (all variants)
 * ESP32-W1 / ESP32-C2 and similar minimal ESP32 derivatives
 * ESP32 with integrated LoRa modules
-* ESP8266
 
-### Role Restrictions
-
-* ESP32-based platforms may operate in Sense Satellite mode or in more advanced Sense roles
-* ESP8266-based platforms are **restricted to Sense Satellite only**
-
-ESP8266 compatibility is conditional on strict adherence to this profile:
-
-* no display
-* no local statistics
-* strictly serial execution
-* external non-volatile storage required
-* wireless communication only in short bursts
+The **ESP32-W1** is defined as the **minimum and reference platform** for Sense Satellite.
 
 ## 9. Architectural Implications
 
