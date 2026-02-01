@@ -1,6 +1,6 @@
 # ESP32 Decision Guide
 
-## by Marcel Sauder February 2026
+### by Marcel Sauder February 2026
 
 This repository provides a practical, engineering-focused overview of common ESP32 variants. The goal is not to repeat datasheets, but to support **real-world decision making** when choosing an ESP32 for PCB design, prototyping, or small-scale production.
 
